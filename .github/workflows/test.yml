@@ -5,7 +5,7 @@ on:
     - main
 jobs:
   tests: 
-    name: 'nightwatch tests'
+    name: 'Nightwatch tests'
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
