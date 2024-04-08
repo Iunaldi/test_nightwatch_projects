@@ -13,17 +13,36 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "18.x"
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 18
       - name: Install dependencies
         run: npm ci
+      - name : Check version of allure
+        run: allure --version
       - name: Run Nightwatch tests
         continue-on-error: true
         run: xvfb-run --auto-servernum npm test -- --env chrome
-      -  name: "Publish test results"
-         uses: peaceiris/actions-gh-pages@v3.7.3
-         with:
-           github_token: ${{ secrets.GITHUB_TOKEN }}
-           publish_dir: "./tests_output/nightwatch-html-report"
-           keep_files: true
-           user_name: "github-actions[bot]"
-           user_email: "github-actions[bot]@users.noreply.github.com"
-           commit_message: "Update Nightwatch test results"
+      - name: Load test report history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        with:
+          gh_pages: gh-pages
+          allure_history: allure-history
+          allure_results: build/allure-results
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@v3
+        if: always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
